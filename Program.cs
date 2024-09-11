@@ -28,10 +28,22 @@ namespace Skill.Integration
                         ValidateAudience = false
                     };
                 });
+            // Configure CORS
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowSpecificOrigin",
+                    policy =>
+                    {
+                        policy.WithOrigins("http://localhost:3000") // Frontend URL
+                              .AllowAnyHeader()
+                              .AllowAnyMethod();
+                    });
+            });
 
             builder.Services.AddSingleton<IAuthService, AuthService>();
             var app = builder.Build();
-
+            // Use CORS
+            app.UseCors("AllowSpecificOrigin");
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
