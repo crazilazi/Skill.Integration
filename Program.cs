@@ -29,13 +29,13 @@ namespace Skill.Integration
                         ValidateAudience = false
                     };
                 });
-            // Configure CORS
+
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("AllowSpecificOrigin",
+                options.AddPolicy("AllowAllOrigins",
                     policy =>
                     {
-                        policy.WithOrigins("http://localhost:3000") // Frontend URL
+                        policy.AllowAnyOrigin()
                               .AllowAnyHeader()
                               .AllowAnyMethod();
                     });
@@ -46,19 +46,15 @@ namespace Skill.Integration
             builder.Services.AddSingleton<ITrainingModelService, TrainingModelService>();
             builder.Services.AddTransient<ISkillRecommendationService, SkillRecommendationService>();
             var app = builder.Build();
-            // Use CORS
-            app.UseCors("AllowSpecificOrigin");
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
+            
+            app.UseCors("AllowAllOrigins");
+
+            app.UseSwagger();
+            app.UseSwaggerUI();
 
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
-
 
             app.MapControllers();
 
