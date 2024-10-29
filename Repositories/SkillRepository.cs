@@ -9,11 +9,9 @@ namespace Skill.Integration.Repositories
 
         public IEnumerable<SkillData> GetAllSkills()
         {
-            using (var db = CreateConnection())
-            {
-                const string query = "SELECT * FROM dbo.skills";
-                return db.Query<SkillData>(query);
-            }
+            using var db = CreateConnection();
+            const string query = "SELECT * FROM dbo.skills";
+            return db.Query<SkillData>(query);
         }
     }
 }
