@@ -4,7 +4,7 @@ namespace Skill.Integration.Services
 {
     public interface ILightCastTokenService
     {
-        Task<string> GetValidTokenAsync();
+        Task<string> GetValidTokenAsync(bool isOpen = false);
         LightCastAccessToken? CurrentToken { get; }
     }
 }

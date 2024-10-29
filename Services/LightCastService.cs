@@ -70,7 +70,7 @@ namespace Skill.Integration.Services
         private IFlurlRequest CreateRequest(string endpoint)
         {
             return BaseUrl.AppendPathSegment(endpoint)
-                .WithHeader("Authorization", $"Bearer {_tokenService.GetValidTokenAsync().Result}");
+                .WithHeader("Authorization", $"Bearer {_tokenService.GetValidTokenAsync(true).Result}");
         }
 
         private static string GetVersion(string? ver) => ver ?? "latest";

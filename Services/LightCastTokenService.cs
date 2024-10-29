@@ -22,7 +22,7 @@ namespace Skill.Integration.Services
             _configuration = configuration;
         }
 
-        public async Task<string> GetValidTokenAsync()
+        public async Task<string> GetValidTokenAsync(bool isOpen = false)
         {
             // Fast path - if token exists and is valid, return it without locking
             if (_currentToken?.IsValid() == true)
@@ -40,15 +40,15 @@ namespace Skill.Integration.Services
                 }
 
                 // Generate new token synchronously since we're already in a lock
-                return GenerateNewTokenAsync().GetAwaiter().GetResult().AccessToken;
+                return GenerateNewTokenAsync(isOpen).GetAwaiter().GetResult().AccessToken;
             }
         }
 
-        private async Task<LightCastAccessToken> GenerateNewTokenAsync()
+        private async Task<LightCastAccessToken> GenerateNewTokenAsync(bool isOpen)
         {
-            var clientId = _configuration["LightCast:ClientId"];
-            var clientSecret = _configuration["LightCast:ClientSecret"];
-            var scope = _configuration["LightCast:Scope"];
+            var clientId = isOpen ? _configuration["LightCastOpen:ClientId"] : _configuration["LightCast:ClientId"];
+            var clientSecret = isOpen ? _configuration["LightCastOpen:ClientSecret"] : _configuration["LightCast:ClientSecret"];
+            var scope = isOpen ? _configuration["LightCastOpen:Scope"] : _configuration["LightCast:Scope"];
 
             try
             {
