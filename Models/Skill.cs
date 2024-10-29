@@ -1,4 +1,6 @@
-﻿namespace Skill.Integration.Models
+﻿using System.Text.Json.Serialization;
+
+namespace Skill.Integration.Models
 {
     public class SkillType
     {
@@ -28,15 +30,30 @@
     {
         public string Id { get; set; } = null!;
         public string Name { get; set; } = null!;   
-        public string InfoUrl { get; set; } = null!;        
+        public string InfoUrl { get; set; } = null!;
+
+        [JsonIgnore]
         public SkillType Type { get; set; } = null!;
+
+        [JsonIgnore]
         public List<Tag> Tags { get; set; } = new();
+
+        [JsonIgnore]
         public bool IsSoftware { get; set; }
+
+        [JsonIgnore]
         public bool IsLanguage {  get; set; }
+
+        [JsonIgnore]
         public string?Description { get; set; }
 
+        [JsonIgnore]
         public string? DescriptionSource { get; set; }
+
+        [JsonIgnore]
         public Category? Category {  get; set; }
+
+        [JsonIgnore]
         public Category? SubCategory { get; set; }
     }
 
