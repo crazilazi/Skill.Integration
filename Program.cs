@@ -48,6 +48,8 @@ namespace Skill.Integration
             builder.Services.AddSingleton<ITrainingModelService, TrainingModelService>();
             builder.Services.AddTransient<ISkillRecommendationService, SkillRecommendationService>();
             builder.Services.AddTransient<ISkillRepository, SkillRepository>();
+            builder.Services.AddTransient<IResourceRepository, ResourceRepository>();
+            builder.Services.AddTransient<IResourceService, ResourceService>();
             builder.Services.AddTransient<ILightCastService, LightCastService>();
             var app = builder.Build();
             
