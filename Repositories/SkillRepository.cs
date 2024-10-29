@@ -1,25 +1,19 @@
-﻿using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
-using Dapper;
+﻿using Dapper;
 using Skill.Integration.Models;
 
 namespace Skill.Integration.Repositories
 {
-    public class SkillRepository : ISkillRepository
+    public class SkillRepository : BaseRepository, ISkillRepository
     {
-        private readonly string _connectionString = "Server=localhost\\SQLEXPRESS;Database=audit03_DEMO_PHX_01;Trusted_Connection=True;";
-
+        public SkillRepository(IConfiguration configuration) : base(configuration) { }
 
         public IEnumerable<SkillData> GetAllSkills()
         {
-
-            using (IDbConnection db = new SqlConnection(_connectionString))
+            using (var db = CreateConnection())
             {
-                string query = "SELECT * FROM dbo.skills";
+                const string query = "SELECT * FROM dbo.skills";
                 return db.Query<SkillData>(query);
             }
-
         }
     }
 }
