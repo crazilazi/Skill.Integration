@@ -43,6 +43,7 @@ namespace Skill.Integration
 
             builder.Services.AddSingleton<IAuthService, AuthService>();
             builder.Services.AddSingleton<DataGenerator>();
+            builder.Services.AddSingleton<ILightCastTokenService, LightCastTokenService>();
             builder.Services.AddSingleton<ITrainingModelService, TrainingModelService>();
             builder.Services.AddTransient<ISkillRecommendationService, SkillRecommendationService>();
             builder.Services.AddTransient<ILightCastService, LightCastService>();
