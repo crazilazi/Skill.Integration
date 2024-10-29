@@ -67,10 +67,10 @@ namespace Skill.Integration.Services
             return JsonSerializer.Deserialize<dynamic>(response, _jsonOptions)!;
         }
 
-        private IFlurlRequest CreateRequest(string endpoint)
+        private IFlurlRequest CreateRequest(string endpoint, string scope = "emsi_open")
         {
             return BaseUrl.AppendPathSegment(endpoint)
-                .WithHeader("Authorization", $"Bearer {_tokenService.GetValidTokenAsync().Result}");
+                .WithHeader("Authorization", $"Bearer {_tokenService.GetValidTokenAsync(scope).Result}");
         }
 
         private static string GetVersion(string? ver) => ver ?? "latest";
