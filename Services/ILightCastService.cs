@@ -13,5 +13,11 @@ namespace Skill.Integration.Services
         public SkillsObject GetSkills(SkillRequest ids, string? version);
         public SkillObject GetSkillById(string id, string? version);
         public RestResponse GetRelatedSkills(SkillRequest requestIds, string? version);
+
+        /// <summary>
+        /// Get all skills
+        /// </summary>
+        /// <returns></returns>
+        IEnumerable<SkillData> GetAllSkills();
     }
 }

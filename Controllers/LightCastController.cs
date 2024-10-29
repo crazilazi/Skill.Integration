@@ -122,4 +122,14 @@ public class LightCastController : ControllerBase
         Request.Headers.TryGetValue(TokenName, out var accessToken);
         _lightCastService.SetToken(accessToken);
     }
+
+    /// <summary>
+    /// Get All Skills
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet("allskills")]
+    public IActionResult GetAllSkills()
+    {
+        return Ok(_lightCastService.GetAllSkills());
+    }
 }

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Skill.Integration.Helpers;
+using Skill.Integration.Repositories;
 using Skill.Integration.Services;
 using System.Text;
 
@@ -45,7 +46,9 @@ namespace Skill.Integration
             builder.Services.AddSingleton<DataGenerator>();
             builder.Services.AddSingleton<ITrainingModelService, TrainingModelService>();
             builder.Services.AddTransient<ISkillRecommendationService, SkillRecommendationService>();
+            builder.Services.AddTransient<ISkillRepository, SkillRepository>();
             builder.Services.AddTransient<ILightCastService, LightCastService>();
+
             var app = builder.Build();
             
             app.UseCors("AllowAllOrigins");

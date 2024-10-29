@@ -1,19 +1,24 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
 using Skill.Integration.Models;
+using Skill.Integration.Repositories;
 using System.Net;
 
 namespace Skill.Integration.Services;
 public class LightCastService : ILightCastService
 {
     private readonly IConfiguration _configuration;
+    private readonly ISkillRepository _skillRepository;
     private string AccessToken { get; set; } = null!;
 
     private string getVersion(string? ver) => ver ?? "latest"; 
-    public LightCastService(IConfiguration configuration)
+    public LightCastService(IConfiguration configuration, ISkillRepository skillRepository)
     {
         _configuration = configuration;
+        _skillRepository = skillRepository;
+
     }
 
     public Token? GetToken()
@@ -79,23 +84,7 @@ public class LightCastService : ILightCastService
        return CallLightCastAPI($"https://emsiservices.com/skills/versions/{getVersion(version)}/related", request);
     }
 
-    private RestRequest BuildRequest(bool TokenRequest = false, Method method = Method.Get)
-    {
-        var request = new RestRequest();
-        request.Method = method;
-        if (TokenRequest)
-        {
-            request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
-        }
-        else
-        {
-            request.AddHeader("Authorization", $"Bearer {AccessToken}");
-        }
-
-        return request;
-    }
-
-    private RestResponse CallLightCastAPI(string url, RestRequest request)
+    public RestResponse CallLightCastAPI(string url, RestRequest request)
     {
         try
         {
@@ -112,6 +101,38 @@ public class LightCastService : ILightCastService
             throw ex;
         }
 
+    }
+
+    private RestRequest BuildRequest(bool TokenRequest = false, Method method = Method.Get)
+    {
+        var request = new RestRequest();
+        request.Method = method;
+        if (TokenRequest)
+        {
+            request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
+        }
+        else
+        {
+            request.AddHeader("Authorization", $"Bearer {AccessToken}");
+        }
+
+        return request;
+    }
+
+    /// <summary>
+    /// Get all skills
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerable<SkillData> GetAllSkills()
+    {
+        try
+        {
+            return _skillRepository.GetAllSkills();
+        }
+        catch (Exception)
+        {
+            throw;
+        }
     }
 }
 
