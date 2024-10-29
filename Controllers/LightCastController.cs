@@ -102,4 +102,14 @@ public class LightCastController : ControllerBase
         return Ok(await _lightCastService.GetSkillByIdAsync(id,version));
     }
 
+    /// <summary>
+    /// Get All Skills
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet("allskills")]
+    public async Task<IActionResult> GetAllSkills()
+    {
+        return Ok(await _lightCastService.GetAllSkills());
+    }
+
 }

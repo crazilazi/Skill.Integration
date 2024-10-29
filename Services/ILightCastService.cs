@@ -10,5 +10,11 @@ namespace Skill.Integration.Services
         Task<dynamic> GetRelatedSkillsAsync(SkillRequest requestIds, string? version = null);
         Task<IEnumerable<string>> GetVersionsAsync();
         Task<dynamic> GetStatusAsync();
+
+        /// <summary>
+        /// Get all skills
+        /// </summary>
+        /// <returns></returns>
+        Task<IEnumerable<SkillData>> GetAllSkills();
     }
 }

@@ -2,12 +2,16 @@
 using Flurl;
 using Skill.Integration.Models;
 using System.Text.Json;
+using Skill.Integration.Repositories;
+using System.Net;
+using System;
 
 namespace Skill.Integration.Services
 {
     public class LightCastService: ILightCastService
     {
         private readonly ILightCastTokenService _tokenService;
+        private readonly ISkillRepository _skillRepository;
         private const string BaseUrl = "https://emsiservices.com/skills";
         private static readonly JsonSerializerOptions _jsonOptions = new()
         {
@@ -15,9 +19,10 @@ namespace Skill.Integration.Services
             PropertyNameCaseInsensitive = true
         };
 
-        public LightCastService(ILightCastTokenService tokenService)
+        public LightCastService(ILightCastTokenService tokenService, ISkillRepository skillRepository)
         {
             _tokenService = tokenService;
+            _skillRepository = skillRepository;
         }
 
         public async Task<dynamic> GetStatusAsync()
@@ -65,6 +70,23 @@ namespace Skill.Integration.Services
                 .PostJsonAsync(requestIds)
                 .ReceiveString();
             return JsonSerializer.Deserialize<dynamic>(response, _jsonOptions)!;
+        }
+
+        /// <summary>
+        /// Get all skills
+        /// </summary>
+        /// <returns></returns>
+        public async Task<IEnumerable<SkillData>> GetAllSkills()
+        {
+            try
+            {
+                return _skillRepository.GetAllSkills();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+
         }
 
         private IFlurlRequest CreateRequest(string endpoint, string scope = "emsi_open")
