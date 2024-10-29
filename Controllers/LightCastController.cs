@@ -19,25 +19,15 @@ public class LightCastController : ControllerBase
         _lightCastService = lightCastService;
     }
 
-    /// <summary>
-    /// Get Access Token From LightCast
-    /// </summary>
-    /// <returns>Access Token</returns>
-    [HttpGet("GetToken")]
-    public IActionResult GetToken()
-    {
-        return Ok(_lightCastService.GetToken());
-    }
 
     /// <summary>
     /// Get Server Status From LightCast
     /// </summary>
     /// <returns>Access Token</returns>
     [HttpGet("GetStatus")]
-    public IActionResult GetStatus()
+    public async Task<IActionResult> GetStatus()
     {
-        SetToken();
-        return Ok(_lightCastService.GetStatus().Content);
+        return Ok(await _lightCastService.GetStatusAsync());
     }
 
     /// <summary>
@@ -45,10 +35,9 @@ public class LightCastController : ControllerBase
     /// </summary>
     /// <returns>List of Versions</returns>
     [HttpGet("versions")]
-    public IActionResult GetVersions()
+    public async Task<IActionResult> GetVersions()
     {
-        SetToken();
-        return Ok(_lightCastService.GetVersions());
+        return Ok(await _lightCastService.GetVersionsAsync());
     }
 
     /// <summary>
@@ -57,10 +46,9 @@ public class LightCastController : ControllerBase
     /// <param name="version"></param>
     /// <returns></returns>
     [HttpGet("skills")]
-    public IActionResult GetSkills(string? version)
+    public async Task<IActionResult> GetSkills(string? version)
     {
-        SetToken(); 
-        return Ok(_lightCastService.GetSkills(version));
+        return Ok(await _lightCastService.GetSkillsAsync(version));
     }
 
     /// <summary>
@@ -70,14 +58,13 @@ public class LightCastController : ControllerBase
     /// <param name="version"></param>
     /// <returns></returns>
     [HttpPost("skills")]
-    public IActionResult GetSkills([FromBody] SkillRequest request, string? version)
+    public async Task<IActionResult> GetSkills([FromBody] SkillRequest request, string? version)
     {
         if (request?.ids == null || request.ids.Count == 0)
         {
             return BadRequest("No IDs provided.");
         }
-        SetToken();
-        return Ok(_lightCastService.GetSkills(request, version));
+        return Ok(await _lightCastService.GetSkillsAsync(request, version));
     }
 
     /// <summary>
@@ -88,20 +75,19 @@ public class LightCastController : ControllerBase
     /// <remarks>This Endpoint has 50 limit request per month, check response header for more details</remarks>
     /// <returns></returns>
     [HttpPost("relatedskills")]
-    public IActionResult GetRelatedSkills([FromBody] SkillRequest request, string? version)
+    public async Task<IActionResult> GetRelatedSkills([FromBody] SkillRequest request, string? version)
     {
         if (request?.ids == null || request.ids.Count == 0)
         {
             return BadRequest("No IDs provided.");
         }
-        SetToken();
-        var response = _lightCastService.GetRelatedSkills(request, version);
-        foreach (var header in response.Headers)
-        {
-            Response.Headers.TryAdd(header.Name, header.Value.ToString());
-        }
-        var result = JsonConvert.DeserializeObject<SkillsObject>(response.Content);
-        return Ok(result);
+        var response = await _lightCastService.GetRelatedSkillsAsync(request, version);
+        //foreach (var header in response.Headers)
+        //{
+        //    Response.Headers.TryAdd(header.Name, header.Value.ToString());
+        //}
+        //var result = JsonConvert.DeserializeObject<SkillsObject>(response.Content);
+        return Ok(response);
     }
 
     /// <summary>
@@ -111,15 +97,9 @@ public class LightCastController : ControllerBase
     /// <param name="version"></param>
     /// <returns></returns>
     [HttpGet("skills/{id}")]
-    public IActionResult GetSkill(string id,string? version)
+    public async Task<IActionResult> GetSkill(string id,string? version)
     {
-        SetToken();
-        return Ok(_lightCastService.GetSkillById(id,version));
+        return Ok(await _lightCastService.GetSkillByIdAsync(id,version));
     }
 
-    private void SetToken()
-    {
-        Request.Headers.TryGetValue(TokenName, out var accessToken);
-        _lightCastService.SetToken(accessToken);
-    }
 }

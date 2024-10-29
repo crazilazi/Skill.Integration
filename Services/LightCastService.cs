@@ -1,117 +1,78 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using RestSharp;
+﻿using Flurl.Http;
+using Flurl;
 using Skill.Integration.Models;
-using System.Net;
+using System.Text.Json;
 
-namespace Skill.Integration.Services;
-public class LightCastService : ILightCastService
+namespace Skill.Integration.Services
 {
-    private readonly IConfiguration _configuration;
-    private string AccessToken { get; set; } = null!;
-
-    private string getVersion(string? ver) => ver ?? "latest"; 
-    public LightCastService(IConfiguration configuration)
+    public class LightCastService: ILightCastService
     {
-        _configuration = configuration;
-    }
-
-    public Token? GetToken()
-    {
-        var clientId = _configuration["LightCast:ClientId"];
-        var clientSecret = _configuration["LightCast:ClientSecret"];
-        var request = BuildRequest(true, Method.Post);
-        request.AddParameter("application/x-www-form-urlencoded", $"client_id={clientId}&client_secret={clientSecret}&grant_type=client_credentials&scope=emsi_open", ParameterType.RequestBody);
-        var response = CallLightCastAPI("https://auth.emsicloud.com/connect/token", request);
-        return JsonConvert.DeserializeObject<Token>(response.Content);
-    }
-
-    public void SetToken(string? token)
-    {
-        if (String.IsNullOrEmpty(token))
+        private readonly ILightCastTokenService _tokenService;
+        private const string BaseUrl = "https://emsiservices.com/skills";
+        private static readonly JsonSerializerOptions _jsonOptions = new()
         {
-            throw new ArgumentNullException("Headers with Key LightCastToken is missing or invalid, Please Generate a new Token");
-        }
-        AccessToken = token;
-    }
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNameCaseInsensitive = true
+        };
 
-    public RestResponse GetStatus()
-    {
-        var request = BuildRequest();
-        return CallLightCastAPI("https://emsiservices.com/skills/status", request);
-    }
-
-    public List<string> GetVersions()
-    {
-        var request = BuildRequest();
-        var response = CallLightCastAPI("https://emsiservices.com/skills/versions",request);
-        return ((JArray)JsonConvert.DeserializeObject<JObject>(response.Content)["data"]).ToObject<List<string>>();
-    }
-
-    public SkillsObject GetSkills(string? version)
-    {
-        var request = BuildRequest();
-        var response = CallLightCastAPI($"https://emsiservices.com/skills/versions/{getVersion(version)}/skills?limit=10",request);
-        return JsonConvert.DeserializeObject<SkillsObject>(response.Content);
-    }
-
-    public SkillsObject GetSkills(SkillRequest requestIds, string? version)
-    {
-        string body = JsonConvert.SerializeObject(requestIds);
-        var request = BuildRequest(method: Method.Post);
-        request.AddParameter("application/json", body, ParameterType.RequestBody);
-        var response = CallLightCastAPI($"https://emsiservices.com/skills/versions/{getVersion(version)}/skills", request);
-        return JsonConvert.DeserializeObject<SkillsObject>(response.Content);
-    }
-
-    public SkillObject GetSkillById(string id, string? version)
-    {
-        var request = BuildRequest();
-        var response = CallLightCastAPI($"https://emsiservices.com/skills/versions/{getVersion(version)}/skills/{id}",request);
-        return JsonConvert.DeserializeObject<SkillObject>(response.Content);
-    }
-
-    public RestResponse GetRelatedSkills(SkillRequest requestIds, string? version)
-    {
-        string body = JsonConvert.SerializeObject(requestIds);
-        var request = BuildRequest(method:Method.Post);
-        request.AddParameter("application/json", body, ParameterType.RequestBody);
-       return CallLightCastAPI($"https://emsiservices.com/skills/versions/{getVersion(version)}/related", request);
-    }
-
-    private RestRequest BuildRequest(bool TokenRequest = false, Method method = Method.Get)
-    {
-        var request = new RestRequest();
-        request.Method = method;
-        if (TokenRequest)
+        public LightCastService(ILightCastTokenService tokenService)
         {
-            request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
-        }
-        else
-        {
-            request.AddHeader("Authorization", $"Bearer {AccessToken}");
+            _tokenService = tokenService;
         }
 
-        return request;
-    }
-
-    private RestResponse CallLightCastAPI(string url, RestRequest request)
-    {
-        try
+        public async Task<dynamic> GetStatusAsync()
         {
-            var client = new RestClient(url);
-            var result = client.Execute(request);
-            if (result.StatusCode != HttpStatusCode.OK)
-            {
-                throw new Exception(result.ErrorMessage);
-            }
-            return result;
-        }
-        catch (Exception ex)
-        {
-            throw ex;
+            var response = await CreateRequest("status")
+                .GetStringAsync();
+            return JsonSerializer.Deserialize<dynamic>(response, _jsonOptions)!;
         }
 
+        public async Task<IEnumerable<string>> GetVersionsAsync()
+        {
+            var response = await CreateRequest("versions")
+                .GetStringAsync();
+
+            LightCastVersion result = JsonSerializer.Deserialize<LightCastVersion>(response, _jsonOptions)!;
+            return result.Versions;
+        }
+
+        public async Task<SkillsObject> GetSkillsAsync(string? version = null)
+        {
+            var response = await CreateRequest($"versions/{GetVersion(version)}/skills")
+                .SetQueryParam("limit", 10)
+                .GetStringAsync();
+            return JsonSerializer.Deserialize<SkillsObject>(response, _jsonOptions)!;
+        }
+
+        public async Task<SkillsObject> GetSkillsAsync(SkillRequest requestIds, string? version = null)
+        {
+            var response = await CreateRequest($"versions/{GetVersion(version)}/skills")
+                .PostJsonAsync(requestIds)
+                .ReceiveString();
+            return JsonSerializer.Deserialize<SkillsObject>(response, _jsonOptions)!;
+        }
+
+        public async Task<SkillObject> GetSkillByIdAsync(string id, string? version = null)
+        {
+            var response = await CreateRequest($"versions/{GetVersion(version)}/skills/{id}")
+                .GetStringAsync();
+            return JsonSerializer.Deserialize<SkillObject>(response, _jsonOptions)!;
+        }
+
+        public async Task<dynamic> GetRelatedSkillsAsync(SkillRequest requestIds, string? version = null)
+        {
+            var response = await CreateRequest($"versions/{GetVersion(version)}/related")
+                .PostJsonAsync(requestIds)
+                .ReceiveString();
+            return JsonSerializer.Deserialize<dynamic>(response, _jsonOptions)!;
+        }
+
+        private IFlurlRequest CreateRequest(string endpoint)
+        {
+            return BaseUrl.AppendPathSegment(endpoint)
+                .WithHeader("Authorization", $"Bearer {_tokenService.GetValidTokenAsync().Result}");
+        }
+
+        private static string GetVersion(string? ver) => ver ?? "latest";
     }
 }
-
