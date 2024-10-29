@@ -48,6 +48,7 @@ namespace Skill.Integration.Services
         {
             var clientId = _configuration["LightCast:ClientId"];
             var clientSecret = _configuration["LightCast:ClientSecret"];
+            var scope = _configuration["LightCast:Scope"];
 
             try
             {
@@ -58,7 +59,7 @@ namespace Skill.Integration.Services
                         client_id = clientId,
                         client_secret = clientSecret,
                         grant_type = "client_credentials",
-                        scope = "emsi_open"
+                        scope
                     });
 
                 string content = await response.GetStringAsync();
