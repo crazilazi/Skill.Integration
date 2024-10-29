@@ -32,16 +32,15 @@ namespace Skill.Integration.Models
         public string Name { get; set; } = null!;   
         public string InfoUrl { get; set; } = null!;
 
-        [JsonIgnore]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public SkillType Type { get; set; } = null!;
 
         [JsonIgnore]
         public List<Tag> Tags { get; set; } = new();
 
-        [JsonIgnore]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public bool IsSoftware { get; set; }
-
-        [JsonIgnore]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public bool IsLanguage {  get; set; }
 
         [JsonIgnore]
